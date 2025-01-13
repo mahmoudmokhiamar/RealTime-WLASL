@@ -1,0 +1,3 @@
+*.csv
+*.parquet
+./capturing landmarks and preprocessing/venv/*

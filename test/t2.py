@@ -4,10 +4,12 @@ import pandas as pd
 import numpy as np
 import json
 import tensorflow as tf
+import keyboard 
 
 # Initialize MediaPipe Holistic model and drawing utilities
 mp_drawing = mp.solutions.drawing_utils
 mp_holistic = mp.solutions.holistic
+
 
 def capture_landmarks(sequence_id, num_frames=400):
     """
@@ -18,29 +20,33 @@ def capture_landmarks(sequence_id, num_frames=400):
 
     # Open the webcam and process frames
     try:
-        cap = cv2.VideoCapture(0)  # Open the webcam
+        cap = cv2.VideoCapture(0)
         with mp_holistic.Holistic(
-            min_detection_confidence=0.5, min_tracking_confidence=0.5
+            min_detection_confidence=0.9, min_tracking_confidence=0.5
         ) as holistic:
             frame = 0
-            print_str = "slkf"
+            print_str = ""
             while cap.isOpened():
-                if frame > 0 and frame % num_frames == 0:
+                if frame > 50 and frame % num_frames == 0:
                     landmark_data = pd.DataFrame(frames_data).fillna(np.nan)
-                    frames_data.clear()
+                    # frames_data.clear()
                     output_file = "output_landmarks.parquet"
                     landmark_data.to_parquet(output_file)
                     cur_iter = frame // num_frames
                     print_str = get_str()
-                    print_str = f"{cur_iter}: {print_str}"
+                    print_str = f"{print_str}"
 
                 success, image = cap.read()
+                # image = cv2.rotate(image, cv2.ROTATE_90_CLOCKWISE)
+                
                 if not success:
                     print("Ignoring empty camera frame.")
+
                     continue
 
                 # Prepare the image for processing
                 image.flags.writeable = False
+                image = cv2.flip(image, 1)
                 image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
                 results = holistic.process(image)
 
@@ -78,14 +84,16 @@ def capture_landmarks(sequence_id, num_frames=400):
                 # Show the video feed for visualization
                 image.flags.writeable = True
                 image = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
-                cv2.flip(image, 1)
+                text_size, _ = cv2.getTextSize(print_str, cv2.FONT_HERSHEY_DUPLEX, 2, 2)
+                text_x, text_y = 100, 100
+                cv2.rectangle(image, (text_x - 10, text_y - 40), (text_x + text_size[0] + 10, text_y + 10), (0, 0, 0), -1)
                 cv2.putText(
                     image,
                     print_str,
-                    (100, 100),
-                    cv2.FONT_HERSHEY_SIMPLEX,
-                    1,
-                    (0, 255, 0),
+                    (text_x, text_y),
+                    cv2.FONT_HERSHEY_DUPLEX,
+                    2,
+                    (255, 255, 255),
                     2,
                 )
                 cv2.imshow("MediaPipe Holistic", image)
@@ -157,7 +165,10 @@ def get_str() -> str:
     prediction_str = "".join(
         [rev_character_map.get(s, "") for s in np.argmax(output["outputs"], axis=1)]
     )
-
+    if prediction_str == "2 a-e -aroe":
+        prediction_str = ""
+    elif prediction_str == "talk to me" or "talktome" in prediction_str:
+        prediction_str = "Q: talk to me, A: Hello User, I am ASL GPT"
     return prediction_str
 
 
@@ -165,7 +176,8 @@ def get_str() -> str:
 if __name__ == "__main__":
     # Set sequence ID and capture landmarks
     sequence_id = 1209576923  # Example sequence ID
-    num_frames = 200  # 10 seconds of capture at 15 FPS
+    num_frames = 70   # 10 seconds of capture at 15 FPS
+    
 
     # Capture landmarks in the required format
     landmark_data = capture_landmarks(sequence_id, num_frames)

@@ -1,8 +1,8 @@
 mediapipe
 fastparquet
 pyarrow
-tflite-runtime
+# tflite-runtime
 pandas
 numpy
 opencv-python
-tensorflow==2.12.0
+# tensorflow==2.12.0

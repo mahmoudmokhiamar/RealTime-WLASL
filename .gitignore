@@ -2,3 +2,5 @@
 *.csv
 *.zip
 .DS_Store
+.DS_Store
+output_landmarks.parquet

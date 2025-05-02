@@ -113,7 +113,7 @@ def capture_landmarks(sequence_id, num_frames=400):
 
 def get_str() -> str:
     # Load inference arguments
-    with open("inference_args.json", "r") as f:
+    with open("test/inference_args.json", "r") as f:
         inference_config = json.load(f)
     selected_columns = inference_config["selected_columns"]
 
@@ -130,7 +130,7 @@ def get_str() -> str:
     frames = df[selected_columns].to_numpy(dtype=np.float32)
 
     # Load TFLite model
-    model_path = "model.tflite"
+    model_path = "test/model.tflite"
     interpreter = tf.lite.Interpreter(model_path=model_path)
 
     # Verify input shape
@@ -157,7 +157,7 @@ def get_str() -> str:
     output = prediction_fn(inputs=frames)
 
     # Decode predictions
-    with open("character_to_prediction_index.json", "r") as f:
+    with open("test/character_to_prediction_index.json", "r") as f:
         character_map = json.load(f)
     rev_character_map = {v: k for k, v in character_map.items()}
 

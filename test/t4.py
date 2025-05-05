@@ -19,7 +19,6 @@ def capture_landmarks(sequence_id, num_frames=400):
     # Initialize an empty list to store frame data
     frames_data = []
 
-    
     # Open the video and process frames
     try:
         cap = cv2.VideoCapture('videoplayback.mp4')
@@ -43,34 +42,22 @@ def capture_landmarks(sequence_id, num_frames=400):
                 image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
                 
                 results = holistic.process(image)
-                image,
-                results.face_landmarks,
-                mp_holistic.FACEMESH_CONTOURS,
-                mp_drawing.DrawingSpec(
-                    color=(255,0,255),
-                    thickness=1,
-                    circle_radius=1
-                ),
-                mp_drawing.DrawingSpec(
-                    color=(0,255,255),
-                    thickness=1,
-                    circle_radius=1
-                )
-            
+
                 # Drawing Right hand Land Marks
-                mp_drawing.draw_landmarks(
-                image, 
-                results.right_hand_landmarks, 
-                mp_holistic.HAND_CONNECTIONS
-                )
+                if results.right_hand_landmarks:
+                    mp_drawing.draw_landmarks(
+                        image, 
+                        results.right_hand_landmarks, 
+                        mp_holistic.HAND_CONNECTIONS
+                    )
             
                 # Drawing Left hand Land Marks
-                mp_drawing.draw_landmarks(
-                image, 
-                results.left_hand_landmarks, 
-                mp_holistic.HAND_CONNECTIONS
-                )
-
+                if results.left_hand_landmarks:
+                    mp_drawing.draw_landmarks(
+                        image, 
+                        results.left_hand_landmarks, 
+                        mp_holistic.HAND_CONNECTIONS
+                    )
 
                 # Store landmarks in a dictionary
                 frame_data = {"sequence_id": sequence_id, "frame": frame}
@@ -123,15 +110,19 @@ def capture_landmarks(sequence_id, num_frames=400):
                 # Show the video feed for visualization
                 image.flags.writeable = True
                 image = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
-                text_size, _ = cv2.getTextSize(print_str, cv2.FONT_HERSHEY_DUPLEX, 2, 2)
-                text_x, text_y = 100, 100 # Position for text
-                cv2.rectangle(image, (text_x - 10, text_y - 40), (text_x + text_size[0] + 10, text_y + 10), (0, 0, 0), -1)
+
+                # Text positioning for bottom-left
+                text_size, _ = cv2.getTextSize(print_str, cv2.FONT_HERSHEY_DUPLEX, 1, 2)
+                text_x, text_y = 10, image.shape[0] - 10  # Position for text (bottom-left)
+
+                cv2.rectangle(image, (text_x - 10, text_y - text_size[1] - 10),
+                              (text_x + text_size[0] + 10, text_y + 10), (0, 0, 0), -1)
                 cv2.putText(
                     image,
                     print_str,
                     (text_x, text_y),
                     cv2.FONT_HERSHEY_DUPLEX,
-                    2,
+                    1,
                     (255, 255, 255),
                     2,
                 )
